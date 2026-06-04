@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PIC/S GMP Trainer – Multiple References</title>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f0f4f8; margin: 0; padding: 20px; }
+        .app-container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 32px; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #1a3e6f; color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { margin: 0; font-size: 1.6rem; }
+        .ref-selector { background: #e9edf2; padding: 0.8rem 2rem; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #d0d7de; }
+        .ref-selector label { font-weight: 600; }
+        .ref-selector select { padding: 8px 12px; border-radius: 30px; border: 1px solid #cbd5e1; font-size: 1rem; background: white; }
+        .edit-mode-btn { background: #ffc107; color: #1a3e6f; border: none; padding: 8px 20px; border-radius: 40px; font-weight: bold; cursor: pointer; }
+        .topic-bar { background: #e9edf2; padding: 0.8rem 2rem; display: flex; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #d0d7de; }
+        .topic-btn { background: white; border: none; padding: 8px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; }
+        .topic-btn.active { background: #1a3e6f; color: white; }
+        .quiz-panel { padding: 2rem; }
+        .progress { font-size: 0.85rem; color: #475569; margin-bottom: 1rem; }
+        .scenario { background: #f8fafc; padding: 1.2rem; border-radius: 20px; border-left: 5px solid #1a3e6f; margin-bottom: 1.5rem; }
+        .question-text { font-weight: 700; font-size: 1.2rem; margin-bottom: 1.2rem; }
+        .options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem; }
+        .option { background: white; border: 1px solid #cbd5e1; border-radius: 60px; padding: 12px 18px; cursor: pointer; }
+        .option.disabled { pointer-events: none; opacity: 0.7; }
+        .feedback { background: #f1f5f9; padding: 1rem; border-radius: 20px; margin: 1rem 0; border-left: 4px solid #94a3b8; }
+        .feedback.correct { background: #e6f9ed; border-left-color: #2b8c4a; }
+        .feedback.wrong { background: #fee9e6; border-left-color: #c2410c; }
+        .next-btn { background: #1a3e6f; color: white; border: none; padding: 12px 28px; border-radius: 40px; font-weight: 600; cursor: pointer; }
+        .edit-panel { background: #fef9e3; border-top: 2px solid #e6b800; padding: 1.5rem; margin-top: 1rem; display: none; }
+        .edit-panel h3 { margin-top: 0; }
+        .topic-selector { margin-bottom: 1rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .topic-selector select { padding: 8px 12px; border-radius: 30px; border: 1px solid #cbd5e1; font-size: 1rem; }
+        .topic-editor, .question-editor { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 12px; background: white; }
+        .topic-editor input, .question-editor input, .question-editor textarea { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 8px; border: 1px solid #ccc; }
+        .btn-small { background: #1a3e6f; color: white; border: none; padding: 5px 12px; border-radius: 20px; cursor: pointer; margin-right: 8px; }
+        .btn-danger { background: #c2410c; }
+        .btn-warning { background: #e6b800; color: #1a3e6f; }
+        footer { background: #f8fafc; text-align: center; padding: 1rem; font-size: 0.75rem; border-top: 1px solid #e2e8f0; }
+        .error-msg { background: #fee9e6; color: #c2410c; padding: 1rem; border-radius: 12px; margin: 1rem; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1>📘 PIC/S GMP Trainer</h1>
+        <button id="toggleEditBtn" class="edit-mode-btn">✏️ Edit Mode</button>
+    </div>
+    <div class="ref-selector">
+        <label>📚 Select Reference:</label>
+        <select id="refSelect">
+            <option value="pics_part1">📖 PIC/S Part I – Basic Requirements for Medicinal Products</option>
+            <option value="pics_part2">🧪 PIC/S Part II – Basic Requirements for APIs</option>
+            <option value="annex1">💉 Annex 1 – Sterile Medicinal Products</option>
+            <option value="annex2a">🧬 Annex 2A – Advanced Therapy Medicinal Products (ATMPs)</option>
+            <option value="annex2b">🔬 Annex 2B – Biological Medicinal Substances</option>
+            <option value="annex3">☢️ Annex 3 – Radiopharmaceuticals</option>
+            <option value="annex4">🐄 Annex 4 – Veterinary Medicinal Products (non‑immunologicals)</option>
+            <option value="annex5">🐓 Annex 5 – Immunological Veterinary Products</option>
+            <option value="annex6">🧴 Annex 6 – Medicinal Gases</option>
+            <option value="annex7">🌿 Annex 7 – Herbal Medicinal Products</option>
+            <option value="annex8">📦 Annex 8 – Sampling of Starting and Packaging Materials</option>
+            <option value="annex9">🧴 Annex 9 – Liquids, Creams and Ointments</option>
+        </select>
+        <span style="font-size:0.75rem;">(Each option needs its own JSON file, e.g. pics_part1.json, annex1.json, etc.)</span>
+    </div>
+    <div class="topic-bar" id="topicBar"><div style="padding: 1rem;">Select a reference to load questions...</div></div>
+    <div class="quiz-panel" id="quizPanel">
+        <div class="progress" id="progressMsg">Waiting</div>
+        <div id="questionArea"></div>
+    </div>
+    <div id="editPanel" class="edit-panel">
+        <h3>✏️ Edit Topic & Questions</h3>
+        <p>Select a chapter from the dropdown below – only that chapter will be loaded for editing.</p>
+        <div class="topic-selector">
+            <label>📌 Select topic to edit: </label>
+            <select id="editTopicSelect"></select>
+            <button id="refreshEditBtn" class="btn-small">Load for editing</button>
+        </div>
+        <div id="topicEditorArea"></div>
+        <button id="addQuestionToTopicBtn" class="btn-small">+ Add Question to Selected Topic</button>
+        <hr>
+        <button id="exportJsonBtn" class="btn-small btn-warning">📥 Export Current Reference as JSON</button>
+        <button id="resetDataBtn" class="btn-small btn-danger">Reset Current Reference to Original</button>
+    </div>
+    <footer>✅ Progress saved per reference • Edit mode edits only the selected chapter</footer>
+</div>
+
+<script>
+    // ---------- References configuration ----------
+    // Each reference maps to a JSON file name and a display label (for internal use)
+    const references = {
+        pics_part1: { file: 'pics_part1.json', label: 'Part I' },
+        pics_part2: { file: 'pics_part2.json', label: 'Part II' },
+        annex1:    { file: 'annex1.json',    label: 'Annex 1' },
+        annex2a:   { file: 'annex2a.json',   label: 'Annex 2A' },
+        annex2b:   { file: 'annex2b.json',   label: 'Annex 2B' },
+        annex3:    { file: 'annex3.json',    label: 'Annex 3' },
+        annex4:    { file: 'annex4.json',    label: 'Annex 4' },
+        annex5:    { file: 'annex5.json',    label: 'Annex 5' },
+        annex6:    { file: 'annex6.json',    label: 'Annex 6' },
+        annex7:    { file: 'annex7.json',    label: 'Annex 7' },
+        annex8:    { file: 'annex8.json',    label: 'Annex 8' },
+        annex9:    { file: 'annex9.json',    label: 'Annex 9' }
+    };
+
+    let currentRef = 'pics_part1';        // default
+    let ORIGINAL_QUESTIONS = null;
+    let QUESTIONS = null;
+    let currentTopic = null;
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let userScore = 0;
+    let answerLock = false;
+    let isEditMode = false;
+
+    // Helper: localStorage keys with reference prefix
+    function getStorageKey(suffix) {
+        return `${currentRef}_${suffix}`;
+    }
+
+    // Load questions for the selected reference
+    async function loadQuestions() {
+        const refInfo = references[currentRef];
+        if (!refInfo) {
+            showError(`Unknown reference: ${currentRef}`);
+            return;
+        }
+        const url = refInfo.file;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const data = await response.json();
+            if (!data || typeof data !== 'object') throw new Error('Invalid JSON');
+            ORIGINAL_QUESTIONS = data;
+            const saved = localStorage.getItem(getStorageKey('editable_questions'));
+            if (saved) {
+                try { QUESTIONS = JSON.parse(saved); }
+                catch(e) { QUESTIONS = JSON.parse(JSON.stringify(ORIGINAL_QUESTIONS)); }
+            } else {
+                QUESTIONS = JSON.parse(JSON.stringify(ORIGINAL_QUESTIONS));
+            }
+            startApp();
+        } catch (err) {
+            showError(`Could not load ${url}: ${err.message}<br><br>👉 Make sure the file exists in the same folder and you are running a local web server (e.g., "python -m http.server 8000").`);
+            document.getElementById('toggleEditBtn').style.display = 'none';
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById('topicBar').innerHTML = `<div class="error-msg">❌ ${msg}</div>`;
+        document.getElementById('progressMsg').innerText = 'Error loading';
+        document.getElementById('toggleEditBtn').style.display = 'none';
+    }
+
+    function startApp() {
+        document.getElementById('toggleEditBtn').style.display = 'block';
+        renderTopicBar();
+        // restore session for this reference
+        const savedTopic = localStorage.getItem(getStorageKey('lastTopic'));
+        if (savedTopic && QUESTIONS[savedTopic]) {
+            currentTopic = savedTopic;
+            currentIndex = parseInt(localStorage.getItem(getStorageKey('lastIndex'))) || 0;
+            userScore = parseInt(localStorage.getItem(getStorageKey('lastScore'))) || 0;
+            currentQuestions = QUESTIONS[currentTopic].questions;
+            renderTopicBar();
+            showQuestion();
+        } else {
+            const firstTopic = Object.keys(QUESTIONS)[0];
+            if (firstTopic) loadTopic(firstTopic);
+        }
+        populateEditTopicSelect();
+    }
+
+    function populateEditTopicSelect() {
+        const select = document.getElementById('editTopicSelect');
+        if (!QUESTIONS) return;
+        select.innerHTML = '';
+        for (const [id, data] of Object.entries(QUESTIONS)) {
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = data.name;
+            select.appendChild(option);
+        }
+    }
+
+    function saveQuestionsToLocalStorage() {
+        localStorage.setItem(getStorageKey('editable_questions'), JSON.stringify(QUESTIONS));
+        populateEditTopicSelect();
+    }
+
+    function resetToOriginal() {
+        if (confirm(`Reset all topics and questions for ${references[currentRef].label} to the original JSON? All edits will be lost.`)) {
+            QUESTIONS = JSON.parse(JSON.stringify(ORIGINAL_QUESTIONS));
+            saveQuestionsToLocalStorage();
+            const firstTopic = Object.keys(QUESTIONS)[0];
+            if (firstTopic) loadTopic(firstTopic);
+            else renderTopicBar();
+            if (isEditMode && document.getElementById('editTopicSelect').value) {
+                renderEditUI(document.getElementById('editTopicSelect').value);
+            }
+        }
+    }
+
+    function exportAsJson() {
+        const dataStr = JSON.stringify(QUESTIONS, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentRef}_edited.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function renderTopicBar() {
+        const bar = document.getElementById('topicBar');
+        if (!QUESTIONS) return;
+        bar.innerHTML = '';
+        for (const [id, data] of Object.entries(QUESTIONS)) {
+            const btn = document.createElement('button');
+            btn.textContent = data.name;
+            btn.classList.add('topic-btn');
+            if (currentTopic === id) btn.classList.add('active');
+            btn.onclick = () => loadTopic(id);
+            bar.appendChild(btn);
+        }
+    }
+
+    function loadTopic(topicId) {
+        currentTopic = topicId;
+        currentQuestions = QUESTIONS[topicId].questions;
+        currentIndex = 0;
+        userScore = 0;
+        answerLock = false;
+        renderTopicBar();
+        saveState();
+        showQuestion();
+    }
+
+    function saveState() {
+        if (!currentTopic) return;
+        localStorage.setItem(getStorageKey('lastTopic'), currentTopic);
+        localStorage.setItem(getStorageKey('lastIndex'), currentIndex);
+        localStorage.setItem(getStorageKey('lastScore'), userScore);
+    }
+
+    function showQuestion() {
+        if (!currentQuestions.length || currentIndex >= currentQuestions.length) {
+            const percent = Math.round((userScore / currentQuestions.length) * 100);
+            document.getElementById('questionArea').innerHTML = `
+                <div class="feedback" style="text-align:center;">
+                    ✅ Topic completed! <br>
+                    You scored ${userScore} out of ${currentQuestions.length} (${percent}%) <br>
+                    <button class="next-btn" id="restartTopicBtn">🔄 Restart Topic</button>
+                </div>
+            `;
+            document.getElementById('progressMsg').innerHTML = `Completed – ${userScore}/${currentQuestions.length} correct`;
+            document.getElementById('restartTopicBtn')?.addEventListener('click', () => loadTopic(currentTopic));
+            return;
+        }
+
+        const q = currentQuestions[currentIndex];
+        document.getElementById('progressMsg').innerHTML = `📌 ${QUESTIONS[currentTopic].name} — Q${currentIndex+1}/${currentQuestions.length} | Score: ${userScore}`;
+        
+        let html = `
+            <div class="scenario">📋 Scenario:<br> ${q.scenario}</div>
+            <div class="question-text">❓ ${q.question}</div>
+            <div class="options" id="optionsContainer">
+        `;
+        q.options.forEach(opt => {
+            const letter = opt.charAt(0);
+            html += `<div class="option" data-choice="${letter}">${opt}</div>`;
+        });
+        html += `</div><div id="feedbackArea"></div><div id="nextButtonArea"></div>`;
+        document.getElementById('questionArea').innerHTML = html;
+
+        document.querySelectorAll('.option').forEach(opt => {
+            opt.addEventListener('click', () => handleAnswer(opt.getAttribute('data-choice')));
+        });
+        answerLock = false;
+    }
+
+    function handleAnswer(selectedLetter) {
+        if (answerLock) return;
+        answerLock = true;
+        const q = currentQuestions[currentIndex];
+        const isCorrect = (selectedLetter === q.correct);
+        if (isCorrect) userScore++;
+        document.querySelectorAll('.option').forEach(opt => opt.classList.add('disabled'));
+        
+        const correctLetter = q.correct;
+        const correctText = q.options.find(opt => opt.startsWith(correctLetter));
+        const feedbackDiv = document.getElementById('feedbackArea');
+        const cls = isCorrect ? 'correct' : 'wrong';
+        feedbackDiv.innerHTML = `
+            <div class="feedback ${cls}">
+                ${isCorrect ? '✅ Correct!' : `❌ Incorrect. Correct answer: ${correctLetter}. ${correctText.substring(1)}`}
+                <br><strong>📖 Explanation:</strong> ${q.explanation}
+            </div>
+        `;
+        document.getElementById('nextButtonArea').innerHTML = `<button class="next-btn" id="nextBtn">Next Question →</button>`;
+        document.getElementById('nextBtn').onclick = () => {
+            currentIndex++;
+            saveState();
+            showQuestion();
+        };
+        document.getElementById('progressMsg').innerHTML = `📌 ${QUESTIONS[currentTopic].name} — Q${currentIndex+1}/${currentQuestions.length} | Score: ${userScore}`;
+        saveState();
+    }
+
+    // ---------- Edit Mode ----------
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        document.getElementById('editPanel').style.display = isEditMode ? 'block' : 'none';
+        if (isEditMode) {
+            const selected = document.getElementById('editTopicSelect').value;
+            if (selected && QUESTIONS[selected]) renderEditUI(selected);
+            else if (Object.keys(QUESTIONS).length) {
+                const first = Object.keys(QUESTIONS)[0];
+                document.getElementById('editTopicSelect').value = first;
+                renderEditUI(first);
+            }
+        } else {
+            if (currentTopic) loadTopic(currentTopic);
+            else renderTopicBar();
+        }
+    }
+
+    function renderEditUI(topicId) {
+        const topicData = QUESTIONS[topicId];
+        if (!topicData) return;
+        const container = document.getElementById('topicEditorArea');
+        container.innerHTML = '';
+        const topicDiv = document.createElement('div');
+        topicDiv.className = 'topic-editor';
+        topicDiv.innerHTML = `
+            <label>Topic Name:</label>
+            <input type="text" id="editTopicName" value="${escapeHtml(topicData.name)}" data-topic-id="${topicId}">
+            <button id="deleteTopicBtn" class="btn-small btn-danger" style="margin-top:8px;">Delete this Topic</button>
+            <hr>
+            <h4>Questions</h4>
+            <div id="questionsList"></div>
+        `;
+        container.appendChild(topicDiv);
+        
+        const questionsList = topicDiv.querySelector('#questionsList');
+        topicData.questions.forEach((q, idx) => {
+            const qDiv = document.createElement('div');
+            qDiv.className = 'question-editor';
+            qDiv.innerHTML = `
+                <textarea rows="2" data-qidx="${idx}" data-field="scenario" placeholder="Scenario">${escapeHtml(q.scenario)}</textarea>
+                <textarea rows="1" data-qidx="${idx}" data-field="question" placeholder="Question">${escapeHtml(q.question)}</textarea>
+                <input type="text" data-qidx="${idx}" data-field="option0" value="${escapeHtml(q.options[0])}" placeholder="Option A">
+                <input type="text" data-qidx="${idx}" data-field="option1" value="${escapeHtml(q.options[1])}" placeholder="Option B">
+                <input type="text" data-qidx="${idx}" data-field="option2" value="${escapeHtml(q.options[2])}" placeholder="Option C">
+                <input type="text" data-qidx="${idx}" data-field="option3" value="${escapeHtml(q.options[3])}" placeholder="Option D">
+                <input type="text" data-qidx="${idx}" data-field="correct" value="${q.correct}" placeholder="Correct letter (A/B/C/D)" style="width:80px;">
+                <textarea rows="2" data-qidx="${idx}" data-field="explanation" placeholder="Explanation">${escapeHtml(q.explanation)}</textarea>
+                <button class="btn-small btn-danger" data-action="deleteQuestion" data-qidx="${idx}">Delete Question</button>
+            `;
+            questionsList.appendChild(qDiv);
+        });
+        
+        document.getElementById('editTopicName').addEventListener('change', (e) => {
+            QUESTIONS[topicId].name = e.target.value;
+            saveQuestionsToLocalStorage();
+            renderTopicBar();
+        });
+        document.getElementById('deleteTopicBtn').onclick = () => {
+            if (confirm(`Delete topic "${QUESTIONS[topicId].name}"?`)) {
+                delete QUESTIONS[topicId];
+                saveQuestionsToLocalStorage();
+                const first = Object.keys(QUESTIONS)[0];
+                if (first) {
+                    document.getElementById('editTopicSelect').value = first;
+                    renderEditUI(first);
+                    if (currentTopic === topicId) loadTopic(first);
+                    else renderTopicBar();
+                } else {
+                    document.getElementById('topicEditorArea').innerHTML = '<p>No topics left.</p>';
+                    renderTopicBar();
+                }
+            }
+        };
+        // Attach change listeners for question fields
+        document.querySelectorAll('#questionsList .question-editor input, #questionsList .question-editor textarea').forEach(field => {
+            if (!field.hasAttribute('data-action')) {
+                field.addEventListener('change', (e) => {
+                    const qidx = parseInt(field.getAttribute('data-qidx'));
+                    const fld = field.getAttribute('data-field');
+                    let val = field.value;
+                    if (fld === 'correct') val = val.toUpperCase();
+                    if (fld === 'option0') QUESTIONS[topicId].questions[qidx].options[0] = val;
+                    else if (fld === 'option1') QUESTIONS[topicId].questions[qidx].options[1] = val;
+                    else if (fld === 'option2') QUESTIONS[topicId].questions[qidx].options[2] = val;
+                    else if (fld === 'option3') QUESTIONS[topicId].questions[qidx].options[3] = val;
+                    else if (fld === 'correct') QUESTIONS[topicId].questions[qidx].correct = val;
+                    else if (fld === 'scenario') QUESTIONS[topicId].questions[qidx].scenario = val;
+                    else if (fld === 'question') QUESTIONS[topicId].questions[qidx].question = val;
+                    else if (fld === 'explanation') QUESTIONS[topicId].questions[qidx].explanation = val;
+                    saveQuestionsToLocalStorage();
+                });
+            }
+        });
+        document.querySelectorAll('#questionsList .btn-danger[data-action="deleteQuestion"]').forEach(btn => {
+            btn.onclick = () => {
+                const qidx = parseInt(btn.getAttribute('data-qidx'));
+                if (confirm('Delete this question?')) {
+                    QUESTIONS[topicId].questions.splice(qidx, 1);
+                    saveQuestionsToLocalStorage();
+                    renderEditUI(topicId);
+                }
+            };
+        });
+    }
+
+    function addQuestionToCurrentTopic() {
+        const topicId = document.getElementById('editTopicSelect').value;
+        if (!topicId || !QUESTIONS[topicId]) return;
+        const newQuestion = {
+            clause: "user_defined",
+            scenario: "New scenario",
+            question: "New question",
+            options: ["A. Option 1", "B. Option 2", "C. Option 3", "D. Option 4"],
+            correct: "A",
+            explanation: "Explanation here"
+        };
+        QUESTIONS[topicId].questions.push(newQuestion);
+        saveQuestionsToLocalStorage();
+        renderEditUI(topicId);
+    }
+
+    function refreshEditFromDropdown() {
+        const selected = document.getElementById('editTopicSelect').value;
+        if (selected && QUESTIONS[selected]) renderEditUI(selected);
+    }
+
+    function escapeHtml(str) { 
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); 
+    }
+
+    // Reference change handler
+    async function onReferenceChange() {
+        currentRef = document.getElementById('refSelect').value;
+        // Clear current UI
+        document.getElementById('topicBar').innerHTML = '<div style="padding: 1rem;">Loading reference...</div>';
+        document.getElementById('questionArea').innerHTML = '';
+        document.getElementById('progressMsg').innerText = 'Switching reference...';
+        if (isEditMode) toggleEditMode(); // exit edit mode
+        await loadQuestions();
+    }
+
+    // Wire buttons
+    document.getElementById('toggleEditBtn').onclick = toggleEditMode;
+    document.getElementById('exportJsonBtn').onclick = exportAsJson;
+    document.getElementById('resetDataBtn').onclick = resetToOriginal;
+    document.getElementById('addQuestionToTopicBtn').onclick = addQuestionToCurrentTopic;
+    document.getElementById('refreshEditBtn').onclick = refreshEditFromDropdown;
+    document.getElementById('refSelect').addEventListener('change', onReferenceChange);
+
+    // Initial load (Part I by default)
+    loadQuestions();
+</script>
+</body>
+</html>
