@@ -4,7 +4,7 @@ A free, open‑source, scenario‑based quiz tool for Good Manufacturing Practic
 Designed for QA professionals to train teams and create custom question banks.
 
 ## 🔗 Live Demo
-[Click here to try it](https://your-username.github.io/your-repo-name/)
+[Click here to try it](https://gitlab-max.github.io/pics-gmp-trainer/)
 
 ## ✨ Features
 - 📚 Covers PIC/S Part I (and optionally Part II, Annexes)
