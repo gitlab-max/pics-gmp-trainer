@@ -22,4 +22,6 @@ Designed for QA professionals to train teams and create custom question banks.
 If you want to run it on your own computer, place the HTML and JSON files in the same folder and start a local web server:
 ```bash
 python -m http.server 8000
+
+
 ![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgitlab-max.github.io%2Fpics-gmp-trainer%2F&label=viewers&icon=align-middle&color=%23052c65&message=&style=flat&tz=UTC)
