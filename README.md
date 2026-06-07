@@ -6,6 +6,9 @@ Designed for QA professionals to train teams and create custom question banks.
 ## 🔗 Live Demo
 [Click here to try it](https://gitlab-max.github.io/pics-gmp-trainer/)
 
+## viewers
+![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgitlab-max.github.io%2Fpics-gmp-trainer%2F&label=viewers&icon=align-middle&color=%23052c65&message=&style=flat&tz=UTC)
+
 ## ✨ Features
 - 📚 Covers PIC/S Part I (and optionally Part II, Annexes)
 - ✏️ **Edit mode** – modify questions, add topics, change answers without coding
@@ -23,5 +26,3 @@ If you want to run it on your own computer, place the HTML and JSON files in the
 ```bash
 python -m http.server 8000
 
-
-![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgitlab-max.github.io%2Fpics-gmp-trainer%2F&label=viewers&icon=align-middle&color=%23052c65&message=&style=flat&tz=UTC)
